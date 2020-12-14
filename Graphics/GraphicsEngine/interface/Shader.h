@@ -82,7 +82,9 @@ DILIGENT_TYPED_ENUM(SHADER_SOURCE_LANGUAGE, Uint32)
     /// When SHADER_SOURCE_LANGUAGE_GLSL_VERBATIM is used, the source code will be compiled as is.
     /// Note that shader macros are ignored when compiling GLSL verbatim in OpenGL backend, and an application
     /// should add the macro definitions to the source code.
-    SHADER_SOURCE_LANGUAGE_GLSL_VERBATIM
+    SHADER_SOURCE_LANGUAGE_GLSL_VERBATIM,
+
+    SHADER_SOURCE_LANGUAGE_SPIRV
 };
 
 

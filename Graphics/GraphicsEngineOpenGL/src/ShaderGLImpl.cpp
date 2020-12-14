@@ -35,6 +35,8 @@
 #include "DataBlobImpl.hpp"
 #include "GLSLUtils.hpp"
 #include "ShaderToolsCommon.hpp"
+#include "../../SPIRV-Cross/spirv_cross.hpp"
+#include "../../SPIRV-Cross/spirv_glsl.hpp"
 
 using namespace Diligent;
 
@@ -93,10 +95,32 @@ ShaderGLImpl::ShaderGLImpl(IReferenceCounters*     pRefCounters,
         ShaderStrings[0] = ReadShaderSourceFile(ShaderCI.Source, ShaderCI.pShaderSourceStreamFactory, ShaderCI.FilePath, pSourceFileData, SourceLen);
         Lenghts[0]       = static_cast<GLint>(SourceLen);
     }
+    else if (ShaderCI.SourceLanguage == SHADER_SOURCE_LANGUAGE_SPIRV)
+    {
+        size_t SourceLen = 0;
+
+        std::vector<uint32_t> BiteCode = ReadShaderSourceFile_SPIRV(ShaderCI.Source, ShaderCI.pShaderSourceStreamFactory, ShaderCI.FilePath, pSourceFileData, SourceLen);
+
+        spirv_cross::CompilerGLSL Compiler(BiteCode);
+
+        for (auto* pMacro = ShaderCI.Macros; pMacro->Name != nullptr && pMacro->Definition != nullptr; ++pMacro)
+        {
+            Compiler.add_header_line("#define " + pMacro->Name + ' ' + pMacro->Definition);
+        }
+
+        std::string Source = Compiler.compile();
+
+        ShaderStrings[0] = Source.c_str();
+        Lenghts[0]       = Source.length();
+    }
     else
     {
         // Build the full source code string that will contain GLSL version declaration,
         // platform definitions, user-provided shader macros, etc.
+        
+        // driver check for amd bug on windows
+        DEV_CHECK_ERR(pDeviceGL->GetDeviceCaps().AdapterInfo.Vendor != ADAPTER_VENDOR_AMD, "amd gpu do not suport shader conversion. Crashing now...");
+
         GLSLSourceString = BuildGLSLSourceString(ShaderCI, deviceCaps, TargetGLSLCompiler::driver);
         ShaderStrings[0] = GLSLSourceString.c_str();
         Lenghts[0]       = static_cast<GLint>(GLSLSourceString.length());
@@ -151,6 +175,8 @@ ShaderGLImpl::ShaderGLImpl(IReferenceCounters*     pRefCounters,
             LOG_INFO_MESSAGE("Failed shader full source: \n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n",
                              FullSource,
                              "\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
+
+            DEV_CHECK_ERR(true, "opengl glsl Shader compilation error!");
         }
 
         LOG_ERROR_AND_THROW(ErrorMsgSS.str().c_str());

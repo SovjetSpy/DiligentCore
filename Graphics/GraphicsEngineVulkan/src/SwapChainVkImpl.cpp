@@ -358,7 +358,7 @@ void SwapChainVkImpl::CreateVulkanSwapChain()
 
         swapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
         // The FIFO present mode is guaranteed by the spec to be supported
-        VERIFY(std::find(presentModes.begin(), presentModes.end(), swapchainPresentMode) != presentModes.end(), "FIFO present mode must be supported");
+        // VERIFY(std::find(presentModes.begin(), presentModes.end(), swapchainPresentMode) != presentModes.end(), "FIFO present mode must be supported");
     }
 
     // Determine the number of VkImage's to use in the swap chain.

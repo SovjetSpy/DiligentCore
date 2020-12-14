@@ -129,6 +129,58 @@ const char* ReadShaderSourceFile(const char*                      SourceCode,
     return SourceCode;
 }
 
+std::vector<uint32_t>&& ReadShaderSourceFile_SPIRV(const char*                      SourceCode,
+                                                  IShaderSourceInputStreamFactory* pShaderSourceStreamFactory,
+                                                  const char*                      FilePath,
+                                                  RefCntAutoPtr<IDataBlob>&        pFileData,
+                                                  size_t&                          SourceCodeLen) noexcept(false)
+{
+    std::vector<uint32_t> BiteCode;
+
+
+    SourceCodeLen = 0;
+    if (SourceCode != nullptr)
+    {
+        VERIFY(FilePath == nullptr, "FilePath must be null when SourceCode is not null");
+        SourceCodeLen = strlen(SourceCode);
+
+        BiteCode.resize(SourceCodeLen / sizeof(uint32_t));
+
+        memcpy(BiteCode.data(), SourceCode, SourceCodeLen);
+    }
+    else
+    {
+        if (pShaderSourceStreamFactory != nullptr)
+        {
+            if (FilePath != nullptr)
+            {
+                RefCntAutoPtr<IFileStream> pSourceStream;
+                pShaderSourceStreamFactory->CreateInputStream(FilePath, &pSourceStream);
+                if (pSourceStream == nullptr)
+                    LOG_ERROR_AND_THROW("Failed to load shader source file '", FilePath, '\'');
+
+                pFileData = MakeNewRCObj<DataBlobImpl>{}(0);
+                pSourceStream->ReadBlob(pFileData);
+                SourceCode = reinterpret_cast<char*>(pFileData->GetDataPtr());
+
+                BiteCode.resize(pFileData->GetSize() / sizeof(uint32_t));
+
+                memcpy(BiteCode.data(), SourceCode, SourceCodeLen);
+            }
+            else
+            {
+                UNEXPECTED("FilePath is null");
+            }
+        }
+        else
+        {
+            UNEXPECTED("Input stream factory is null");
+        }
+    }
+
+    return std::move(BiteCode);
+}
+
 void AppendShaderSourceCode(std::string& Source, const ShaderCreateInfo& ShaderCI) noexcept(false)
 {
     RefCntAutoPtr<IDataBlob> pFileData;

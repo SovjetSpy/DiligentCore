@@ -158,6 +158,7 @@ endif()
 target_include_directories(Diligent-GraphicsEngineOpenGL-static
 PRIVATE
     include
+	../../ThirdParty/SPIRV-Cross/include
 )
 
 set(PRIVATE_DEPENDENCIES 

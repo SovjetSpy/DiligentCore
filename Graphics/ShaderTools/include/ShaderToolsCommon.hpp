@@ -31,6 +31,7 @@
 #include "Shader.h"
 #include "RefCntAutoPtr.hpp"
 #include "DataBlob.h"
+#include <vector>
 
 namespace Diligent
 {
@@ -74,6 +75,8 @@ const char* ReadShaderSourceFile(const char*                      SourceCode,
                                  const char*                      FilePath,
                                  RefCntAutoPtr<IDataBlob>&        pFileData,
                                  size_t&                          SourceCodeLen) noexcept(false);
+
+std::vector<uint32_t>&& ReadShaderSourceFile_SPIRV(const char* SourceCode, IShaderSourceInputStreamFactory* pShaderSourceStreamFactory, const char* FilePath, RefCntAutoPtr<IDataBlob>& pFileData, size_t& SourceCodeLen) noexcept(false);
 
 /// Appends shader source code to the source string
 void AppendShaderSourceCode(std::string& Source, const ShaderCreateInfo& ShaderCI) noexcept(false);

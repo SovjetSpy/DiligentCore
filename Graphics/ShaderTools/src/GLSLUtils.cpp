@@ -39,8 +39,7 @@
 
 namespace Diligent
 {
-
-String BuildGLSLSourceString(const ShaderCreateInfo& ShaderCI,
+    String BuildGLSLSourceString(const ShaderCreateInfo& ShaderCI,
                              const DeviceCaps&       deviceCaps,
                              TargetGLSLCompiler      TargetCompiler,
                              const char*             ExtraDefinitions)

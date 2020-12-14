@@ -40,6 +40,8 @@ enum TargetGLSLCompiler
     driver
 };
 
+// void SetAMDFuncs(String* SourceString);
+
 String BuildGLSLSourceString(const ShaderCreateInfo& ShaderCI,
                              const DeviceCaps&       deviceCaps,
                              TargetGLSLCompiler      TargetCompiler,

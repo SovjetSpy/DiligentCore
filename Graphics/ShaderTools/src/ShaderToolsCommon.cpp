@@ -28,6 +28,7 @@
 #include "ShaderToolsCommon.hpp"
 #include "DebugUtilities.hpp"
 #include "DataBlobImpl.hpp"
+#include <string.h>
 
 namespace Diligent
 {
@@ -129,7 +130,7 @@ const char* ReadShaderSourceFile(const char*                      SourceCode,
     return SourceCode;
 }
 
-std::vector<uint32_t>&& ReadShaderSourceFile_SPIRV(const char*                      SourceCode,
+std::vector<uint32_t> ReadShaderSourceFile_SPIRV(const char*                      SourceCode,
                                                   IShaderSourceInputStreamFactory* pShaderSourceStreamFactory,
                                                   const char*                      FilePath,
                                                   RefCntAutoPtr<IDataBlob>&        pFileData,
@@ -162,10 +163,12 @@ std::vector<uint32_t>&& ReadShaderSourceFile_SPIRV(const char*                  
                 pFileData = MakeNewRCObj<DataBlobImpl>{}(0);
                 pSourceStream->ReadBlob(pFileData);
                 SourceCode = reinterpret_cast<char*>(pFileData->GetDataPtr());
+                SourceCodeLen = pFileData->GetSize();
 
-                BiteCode.resize(pFileData->GetSize() / sizeof(uint32_t));
+                BiteCode.resize(SourceCodeLen / sizeof(uint32_t));
 
-                memcpy(BiteCode.data(), SourceCode, SourceCodeLen);
+                if (!memcpy(BiteCode.data(), SourceCode, SourceCodeLen))
+                    DEV_CHECK_ERR(true, "error in moving memory");
             }
             else
             {
@@ -178,7 +181,7 @@ std::vector<uint32_t>&& ReadShaderSourceFile_SPIRV(const char*                  
         }
     }
 
-    return std::move(BiteCode);
+    return BiteCode;
 }
 
 void AppendShaderSourceCode(std::string& Source, const ShaderCreateInfo& ShaderCI) noexcept(false)

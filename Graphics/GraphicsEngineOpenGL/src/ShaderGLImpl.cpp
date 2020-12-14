@@ -35,8 +35,10 @@
 #include "DataBlobImpl.hpp"
 #include "GLSLUtils.hpp"
 #include "ShaderToolsCommon.hpp"
-#include "../../SPIRV-Cross/spirv_cross.hpp"
-#include "../../SPIRV-Cross/spirv_glsl.hpp"
+
+//#include "spirv_cross.hpp"
+#include "spirv_glsl.hpp"
+
 
 using namespace Diligent;
 
@@ -101,17 +103,21 @@ ShaderGLImpl::ShaderGLImpl(IReferenceCounters*     pRefCounters,
 
         std::vector<uint32_t> BiteCode = ReadShaderSourceFile_SPIRV(ShaderCI.Source, ShaderCI.pShaderSourceStreamFactory, ShaderCI.FilePath, pSourceFileData, SourceLen);
 
-        spirv_cross::CompilerGLSL Compiler(BiteCode);
+        diligent_spirv_cross::CompilerGLSL Compiler(BiteCode);
 
-        for (auto* pMacro = ShaderCI.Macros; pMacro->Name != nullptr && pMacro->Definition != nullptr; ++pMacro)
+        if (ShaderCI.Macros != nullptr)
         {
-            Compiler.add_header_line("#define " + pMacro->Name + ' ' + pMacro->Definition);
+            for (auto* pMacro = ShaderCI.Macros; pMacro->Name != nullptr && pMacro->Definition != nullptr; ++pMacro)
+            {
+                Compiler.add_header_line("#define " + std::string(pMacro->Name) + ' ' + std::string(pMacro->Definition));
+            }
         }
+
 
         std::string Source = Compiler.compile();
 
         ShaderStrings[0] = Source.c_str();
-        Lenghts[0]       = Source.length();
+        Lenghts[0]       = static_cast<GLint>(Source.length());
     }
     else
     {
@@ -119,7 +125,7 @@ ShaderGLImpl::ShaderGLImpl(IReferenceCounters*     pRefCounters,
         // platform definitions, user-provided shader macros, etc.
         
         // driver check for amd bug on windows
-        DEV_CHECK_ERR(pDeviceGL->GetDeviceCaps().AdapterInfo.Vendor != ADAPTER_VENDOR_AMD, "amd gpu do not suport shader conversion. Crashing now...");
+        // DEV_CHECK_ERR(pDeviceGL->GetDeviceCaps().AdapterInfo.Vendor != ADAPTER_VENDOR_AMD, "amd gpu do not suport shader conversion. Crashing now...");
 
         GLSLSourceString = BuildGLSLSourceString(ShaderCI, deviceCaps, TargetGLSLCompiler::driver);
         ShaderStrings[0] = GLSLSourceString.c_str();

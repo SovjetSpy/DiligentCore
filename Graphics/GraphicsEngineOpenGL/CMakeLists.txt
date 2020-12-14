@@ -167,6 +167,7 @@ set(PRIVATE_DEPENDENCIES
     Diligent-TargetPlatform
     Diligent-GraphicsEngine
     Diligent-ShaderTools
+	spirv-cross-glsl
 )
 
 if(${DILIGENT_NO_HLSL})

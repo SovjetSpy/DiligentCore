@@ -35,6 +35,8 @@
 #include "RenderDeviceGLImpl.hpp"
 #include "GLProgramResources.hpp"
 
+
+
 namespace Diligent
 {
 

@@ -196,6 +196,7 @@
 "vec3  f16tof32( ivec3 i3 ){ return f16tof32( uvec3( i3 ) ); }\n"
 "vec4  f16tof32( ivec4 i4 ){ return f16tof32( uvec4( i4 ) ); }\n"
 "\n"
+"\n"
 "uint f32tof16( float f )\n"
 "{ \n"
 "    return packHalf2x16( vec2( f, 0.0 ) ) & 0x0ffffu;\n"

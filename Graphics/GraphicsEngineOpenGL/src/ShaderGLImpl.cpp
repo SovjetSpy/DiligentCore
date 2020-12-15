@@ -105,6 +105,12 @@ ShaderGLImpl::ShaderGLImpl(IReferenceCounters*     pRefCounters,
 
         diligent_spirv_cross::CompilerGLSL Compiler(BiteCode);
 
+        diligent_spirv_cross::CompilerGLSL::Options opts = Compiler.get_common_options();
+        opts.version                                     = 430;
+        opts.separate_shader_objects                     = (bool)(deviceCaps.Features.SeparablePrograms == 1);
+        Compiler.set_common_options(opts);
+        // Compiler.require_extension("GL_ARB_separate_shader_objects");
+
         if (ShaderCI.Macros != nullptr)
         {
             for (auto* pMacro = ShaderCI.Macros; pMacro->Name != nullptr && pMacro->Definition != nullptr; ++pMacro)
@@ -113,11 +119,17 @@ ShaderGLImpl::ShaderGLImpl(IReferenceCounters*     pRefCounters,
             }
         }
 
+        APIInfo info = pDeviceGL->GetEngineFactory()->GetAPIInfo();
 
-        std::string Source = Compiler.compile();
+        GLSLSourceString = "\n";
+        //Compiler.unset_execution_mode();
 
-        ShaderStrings[0] = Source.c_str();
-        Lenghts[0]       = static_cast<GLint>(Source.length());
+        GLSLSourceString += Compiler.compile();
+
+        ShaderStrings[0] = GLSLSourceString.c_str();
+        Lenghts[0]       = static_cast<GLint>(GLSLSourceString.length());
+
+        LOG_INFO_MESSAGE('\n', GLSLSourceString, '\n');
     }
     else
     {

@@ -87,6 +87,14 @@ ShaderVkImpl::ShaderVkImpl(IReferenceCounters*     pRefCounters,
             break;
 
             case SHADER_COMPILER_DEFAULT:
+            if (ShaderCI.SourceLanguage == SHADER_SOURCE_LANGUAGE_SPIRV)
+            {
+                RefCntAutoPtr<IDataBlob> pSourceFileData;
+                size_t      SourceLength = 0;
+                m_SPIRV = ReadShaderSourceFile_SPIRV(ShaderCI.Source, ShaderCI.pShaderSourceStreamFactory, ShaderCI.FilePath, pSourceFileData, SourceLength);
+            }
+            break;
+            
             case SHADER_COMPILER_GLSLANG:
             {
 #if DILIGENT_NO_GLSLANG
@@ -95,6 +103,12 @@ ShaderVkImpl::ShaderVkImpl(IReferenceCounters*     pRefCounters,
                 if (ShaderCI.SourceLanguage == SHADER_SOURCE_LANGUAGE_HLSL)
                 {
                     m_SPIRV = GLSLangUtils::HLSLtoSPIRV(ShaderCI, VulkanDefine, ShaderCI.ppCompilerOutput);
+                }
+                else if (ShaderCI.SourceLanguage == SHADER_SOURCE_LANGUAGE_SPIRV)
+                {
+                    RefCntAutoPtr<IDataBlob> pSourceFileData;
+                    size_t                   SourceLength = 0;
+                    m_SPIRV                               = ReadShaderSourceFile_SPIRV(ShaderCI.Source, ShaderCI.pShaderSourceStreamFactory, ShaderCI.FilePath, pSourceFileData, SourceLength);
                 }
                 else
                 {

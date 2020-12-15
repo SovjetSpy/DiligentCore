@@ -334,9 +334,18 @@ void SwapChainVkImpl::CreateVulkanSwapChain()
     // Mailbox is the lowest latency non-tearing presentation mode.
     VkPresentModeKHR swapchainPresentMode = m_VSyncEnabled ? VK_PRESENT_MODE_FIFO_KHR : VK_PRESENT_MODE_MAILBOX_KHR;
 
+    const static VkPresentModeKHR NonVcyncAlternative = VK_PRESENT_MODE_IMMEDIATE_KHR;
+
     bool PresentModeSupported = std::find(presentModes.begin(), presentModes.end(), swapchainPresentMode) != presentModes.end();
     if (!PresentModeSupported)
     {
+        bool PresentModeSupportedAlternatives = std::find(presentModes.begin(), presentModes.end(), NonVcyncAlternative) != presentModes.end();
+        if (PresentModeSupportedAlternatives)
+        {
+            swapchainPresentMode = NonVcyncAlternative;
+            goto skip;
+        }
+
         VERIFY(swapchainPresentMode != VK_PRESENT_MODE_FIFO_KHR, "The FIFO present mode is guaranteed by the spec to be supported");
 
         const char* PresentModeName = nullptr;
@@ -360,6 +369,8 @@ void SwapChainVkImpl::CreateVulkanSwapChain()
         // The FIFO present mode is guaranteed by the spec to be supported
         // VERIFY(std::find(presentModes.begin(), presentModes.end(), swapchainPresentMode) != presentModes.end(), "FIFO present mode must be supported");
     }
+
+skip:
 
     // Determine the number of VkImage's to use in the swap chain.
     // We need to acquire only 1 presentable image at at time.

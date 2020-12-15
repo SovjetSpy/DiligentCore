@@ -50,7 +50,7 @@ so it must always be handled first.
 To get the repository and all submodules, use the following command:
 
 ```
-git clone --recursive https://github.com/DiligentGraphics/DiligentCore.git
+git clone --recursive https://github.com/SovjetSpy/DiligentCore.git
 ```
 
 To build the module, see 

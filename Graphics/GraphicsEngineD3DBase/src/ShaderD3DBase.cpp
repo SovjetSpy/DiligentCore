@@ -41,6 +41,10 @@
 #include "DXCompiler.hpp"
 #include "HLSLUtils.hpp"
 
+#include "spirv_hlsl.hpp"
+
+#include "ShaderToolsCommon.hpp"
+
 namespace Diligent
 {
 
@@ -146,9 +150,39 @@ ShaderD3DBase::ShaderD3DBase(const ShaderCreateInfo& ShaderCI, const ShaderVersi
         }
         else
         {
+            String ShaderSource;
             std::string strShaderProfile = GetHLSLProfileString(ShaderCI.Desc.ShaderType, ShaderModel);
 
-            String ShaderSource = BuildHLSLSourceString(ShaderCI);
+            if (ShaderCI.SourceLanguage == SHADER_SOURCE_LANGUAGE_SPIRV)
+            {
+                RefCntAutoPtr<IDataBlob> pSourceFileData;
+                size_t                   SourceLength = 0;
+                std::vector<uint32_t>    SPIRV        = ReadShaderSourceFile_SPIRV(ShaderCI.Source, ShaderCI.pShaderSourceStreamFactory, ShaderCI.FilePath, pSourceFileData, SourceLength);
+
+                diligent_spirv_cross::CompilerHLSL Compiler(SPIRV);
+
+                diligent_spirv_cross::CompilerHLSL::Options opts = Compiler.get_hlsl_options();
+                opts.shader_model = ShaderModel.Major * 10 + ShaderModel.Minor;
+                Compiler.set_hlsl_options(opts);
+
+                ShaderSource = Compiler.compile();
+
+
+                // this will be broken some day.
+                // should fix.
+                // TODO: fix
+                auto Func = [](const char* ShaderCI_s, std::string& Source) {
+                    ShaderCI_s = Source.c_str();
+                };
+
+                Func(ShaderCI.Source, ShaderSource);
+
+                LOG_INFO_MESSAGE("\n", ShaderSource, "\n");
+            }
+            else
+            {
+                ShaderSource = BuildHLSLSourceString(ShaderCI);
+            }
 
             CComPtr<ID3DBlob> CompilerOutput;
 

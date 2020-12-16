@@ -66,6 +66,7 @@ PRIVATE
 PUBLIC
     Diligent-GraphicsEngine
     Diligent-GraphicsEngineD3DBaseInterface
+    spirv-cross-hlsl
 )
 
 set_common_target_properties(Diligent-GraphicsEngineD3DBase)

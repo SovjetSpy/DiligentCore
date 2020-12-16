@@ -481,6 +481,7 @@ std::vector<unsigned int> HLSLtoSPIRV(const ShaderCreateInfo& ShaderCI,
 
     IncluderImpl Includer{ShaderCI.pShaderSourceStreamFactory};
 
+ 
     auto SPIRV = CompileShaderInternal(Shader, messages, &Includer, SourceCode, SourceCodeLen, ppCompilerOutput);
     if (SPIRV.empty())
         return SPIRV;

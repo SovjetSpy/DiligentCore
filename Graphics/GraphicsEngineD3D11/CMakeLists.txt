@@ -120,6 +120,7 @@ PRIVATE
     Diligent-TargetPlatform
     Diligent-Common
     Diligent-ShaderTools 
+    spirv-cross-hlsl
     dxgi.lib
     d3d11.lib
     d3dcompiler.lib

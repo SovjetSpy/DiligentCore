@@ -50,6 +50,7 @@
 #include "FramebufferGLImpl.hpp"
 #include "EngineMemory.h"
 #include "StringTools.hpp"
+#include "GLSLangUtils.hpp"
 
 namespace Diligent
 {
@@ -463,10 +464,16 @@ RenderDeviceGLImpl::RenderDeviceGLImpl(IReferenceCounters*       pRefCounters,
 #if defined(_MSC_VER) && defined(_WIN64)
     static_assert(sizeof(DeviceFeatures) == 31, "Did you add a new feature to DeviceFeatures? Please handle its satus here.");
 #endif
+
+    // for glsl fix on amd card, becouse the driver just yeets an error
+    if (AdapterInfo.Vendor == ADAPTER_VENDOR_AMD)
+        GLSLangUtils::InitializeGlslang();
 }
 
 RenderDeviceGLImpl::~RenderDeviceGLImpl()
 {
+    if (m_DeviceCaps.AdapterInfo.Vendor == ADAPTER_VENDOR_AMD)
+        GLSLangUtils::FinalizeGlslang();
 }
 
 IMPLEMENT_QUERY_INTERFACE(RenderDeviceGLImpl, IID_RenderDeviceGL, TRenderDeviceBase)

@@ -34,10 +34,12 @@
 #include "DeviceContextGLImpl.hpp"
 #include "DataBlobImpl.hpp"
 #include "GLSLUtils.hpp"
+#include "GLSLangUtils.hpp"
 #include "ShaderToolsCommon.hpp"
 
 //#include "spirv_cross.hpp"
 #include "spirv_glsl.hpp"
+#include "spirv.hpp"
 
 
 using namespace Diligent;
@@ -135,11 +137,37 @@ ShaderGLImpl::ShaderGLImpl(IReferenceCounters*     pRefCounters,
     {
         // Build the full source code string that will contain GLSL version declaration,
         // platform definitions, user-provided shader macros, etc.
-        
-        // driver check for amd bug on windows
-        // DEV_CHECK_ERR(pDeviceGL->GetDeviceCaps().AdapterInfo.Vendor != ADAPTER_VENDOR_AMD, "amd gpu do not suport shader conversion. Crashing now...");
 
-        GLSLSourceString = BuildGLSLSourceString(ShaderCI, deviceCaps, TargetGLSLCompiler::driver);
+        if (pDeviceGL->GetDeviceCaps().AdapterInfo.Vendor == ADAPTER_VENDOR_AMD && ShaderCI.SourceLanguage == SHADER_SOURCE_LANGUAGE_HLSL)
+        {
+            static constexpr char VulkanDefine[] =
+                "#ifndef OPEN_GL\n"
+                "#   define OPEN_GL 1\n"
+                "#endif\n";
+
+            
+
+            std::vector<uint32_t> BiteCode = GLSLangUtils::HLSLtoSPIRV(ShaderCI, VulkanDefine, ShaderCI.ppCompilerOutput);
+
+            diligent_spirv_cross::CompilerGLSL Compiler(BiteCode);
+
+            diligent_spirv_cross::CompilerGLSL::Options opts = Compiler.get_common_options();
+            opts.version                                     = 430;
+            opts.separate_shader_objects                     = (bool)(deviceCaps.Features.SeparablePrograms == 1);
+            Compiler.set_common_options(opts);
+
+            GLSLSourceString = "\n";
+
+            GLSLSourceString += Compiler.compile();
+
+            ShaderStrings[0] = GLSLSourceString.c_str();
+            Lenghts[0]       = static_cast<GLint>(GLSLSourceString.length());
+        }
+        else
+        {
+            GLSLSourceString = BuildGLSLSourceString(ShaderCI, deviceCaps, TargetGLSLCompiler::driver);
+        }
+
         ShaderStrings[0] = GLSLSourceString.c_str();
         Lenghts[0]       = static_cast<GLint>(GLSLSourceString.length());
     }

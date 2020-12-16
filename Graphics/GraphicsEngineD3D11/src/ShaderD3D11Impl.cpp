@@ -31,6 +31,8 @@
 #include "RenderDeviceD3D11Impl.hpp"
 #include "ResourceMapping.h"
 
+
+
 namespace Diligent
 {
 
@@ -99,6 +101,7 @@ ShaderD3D11Impl::ShaderD3D11Impl(IReferenceCounters*     pRefCounters,
 // clang-format on
 {
     auto* pDeviceD3D11 = pRenderDeviceD3D11->GetD3D11Device();
+
     switch (ShaderCI.Desc.ShaderType)
     {
 
